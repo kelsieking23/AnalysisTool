@@ -10,7 +10,7 @@ from tkinter import filedialog
 import os
 import numpy as np
 import subprocess
-from gui import Batch, Timeseries
+# from gui import Batch, Timeseries
 
 class Plotter:
 
@@ -39,12 +39,15 @@ class Plotter:
         self.ytick_font_size = None
         self.alter_xscale = None
         self.alter_yscale = None
+        self.linewidth = None
+        self.secondary_x = None
+        self.secondary_y = None
+        self.direction = None
 
         # change attributes based on user input
         for key in params.keys():
             self.__setattr__(key,params[key])
 
-        print(self.__dict__)
 
     # accessory function
     def divide(self, n, m):
@@ -88,7 +91,6 @@ class Plotter:
         dfs = []
         files = list(self.files)
         for filename in files:
-            print(filename)
             skiprows = 0
             f = open(filename, 'r')
             for line in f:
@@ -106,6 +108,7 @@ class Plotter:
                     f.close()
                     break
         
+        # alter axis scale
         if self.alter_xscale is not None:
             dfs = self.alter_timescale(axis='X', dfs=dfs)
         if self.alter_yscale is not None:
@@ -114,12 +117,12 @@ class Plotter:
 
         #plot dataframes
         for df in dfs:
-            print(df.tail())
             x = df['X']
             y = df['Y']
-            plt.plot(x, y)
-    
+            plt.plot(x, y, linewidth=self.linewidth)
+
         # set graph parameters
+        
         ax = plt.axes() # initialize axes object
 
         df = dfs[0]
@@ -129,14 +132,15 @@ class Plotter:
         if self.xmax is None:
             self.xmax = int(df['X'].iloc[-1].round())
 
-
+        # set x range
         x_range = np.arange(self.xmin, self.xmax+1, self.divide(self.xmax, 10))
 
         xlocs, xlabels = plt.xticks() # get current xtick locations and labels
         ylocs, ylabels = plt.yticks() # get current ytick locations and labels
 
+        # set major x and y ticks
         if self.majorxticks is not None:
-            ax.xaxis.set_major_locator(MultipleLocator(float(self.majorxticks)))
+            ax.xaxis.set_major_locator(MultipleLocator(float(self.majorxticks)))               
         else:
             plt.xticks(xlocs[1:], x_range)
 
@@ -149,10 +153,23 @@ class Plotter:
         if self.minoryticks is not None:
             ax.yaxis.set_minor_locator(MultipleLocator(float(self.minoryticks))) # set minor y tick labels
         
+        # set secondary axes/tickmark directions
+        if self.secondary_x == True:
+            ax.tick_params(axis='x', top=True, direction=self.direction, which='both')
+        else:
+            ax.tick_params(axis='x', direction=self.direction, which='both')
+       
+        if self.secondary_y == True:
+            ax.tick_params(axis='y', right=True, direction=self.direction, which='both')
+        else:
+            ax.tick_params(axis='y', direction=self.direction, which='both')
+
+
         # tick label size
         ax.tick_params(axis='x',labelsize=float(self.xtick_font_size)) 
         ax.tick_params(axis='y', labelsize=float(self.ytick_font_size))
 
+        # set min and max y axis
         ymin, ymax = plt.ylim()
         if self.ymin is not None:
             if self.ymax is not None:
@@ -162,7 +179,7 @@ class Plotter:
         if self.ymax is not None:
             plt.ylim(ymin, float(self.ymax))
             
-            
+        # set min and max x axis
         if self.xmin is not None:
             if self.xmax is not None:
                 plt.xlim(float(self.xmin), float(self.xmax))
@@ -174,20 +191,22 @@ class Plotter:
             else:
                 plt.xlim(df['X'].iloc[0], df['X'].iloc[-1])
 
+        # set axis labels
         if self.xlabel is not None:
             plt.xlabel(self.xlabel, fontsize=float(self.xlabel_font_size), fontname=self.font) # x axis label
         if self.ylabel is not None:
             plt.ylabel(self.ylabel, fontsize=float(self.ylabel_font_size), fontname=self.font) # y axis label
         
+        # set title
         if self.title is not None:
             if self.subtitle is not None:
                 title = plt.suptitle(self.title, fontname=self.font, fontsize=float(self.title_font_size))
                 subtitle = plt.title(self.subtitle, fontname=self.font, fontsize=float(self.subtitle_font_size))
             else:
                 title = plt.title(self.title, fontname=self.font, fontsize=float(self.title_font_size))
-            
-        plt.savefig(self.save_path, dpi=300) # save figure to .png
+        
+        # plt.savefig(self.save_path, dpi=300) # save figure to .png
         
         plt.show()
-
-        
+# plotter = Plotter(files=['/Users/kelsieking/Desktop/Analyze/test/pro1_pro2.xvg'], xtick_font_size=13, ytick_font_size=13, xmin=0, xmax=10, majorxticks=2, minorxticks=1, majoryticks=1, minoryticks=0.5, ymin=0, ymax=5)
+# plotter.timeseries()

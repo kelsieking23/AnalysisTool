@@ -91,6 +91,10 @@ class Batch:
         self.ytick_font_size = None
         self.alter_yscale = None
         self.alter_xscale = None
+        self.linewidth = None
+        self.secondary_x = None
+        self.secondary_y = None
+        self.direction = None
 
         # create a list to hold TimeSeries objects
         self.timeseries_batch = []
@@ -104,7 +108,7 @@ class Batch:
                                     xmin=self.xmin, xmax=self.xmax, ymin=self.ymin, ymax=self.ymax, xlabel=self.xlabel, ylabel=self.ylabel, majorxticks=self.majorxticks,
                                     majoryticks=self.majoryticks, minorxticks=self.minorxticks, minoryticks=self.minoryticks, font=self.font, xlabel_font_size=self.xlabel_font_size,
                                     ylabel_font_size=self.ylabel_font_size, xtick_font_size=self.xtick_font_size, ytick_font_size=self.ytick_font_size, alter_xscale=self.alter_xscale, 
-                                    alter_yscale=self.alter_yscale)
+                                    alter_yscale=self.alter_yscale, linewidth=self.linewidth, secondary_x=self.secondary_x, secondary_y=self.secondary_y, direction=self.direction)
             plot.timeseries()
 
     def add_timeseries(self):
@@ -120,7 +124,7 @@ class BatchWindow(Toplevel):
         self.row = 2 # to keep track of rows on grid to dynamically add group entry feilds
         self.group = 1 # to keep track of groups added to dynamically add group entry feilds
         self.column = 2 # to keep track columns on grid to dynamically add color entries
-        self.colorrow = 3 # same as above
+        self.colorrow = 5 # same as above
 
 
         # initialize window
@@ -187,6 +191,7 @@ class BatchWindow(Toplevel):
         feild_frame = Frame(self.field_entry_frame)
         feild_frame.pack()
         var = IntVar()
+        
         sele = Checkbutton(feild_frame, variable=var)
         sele.grid(row=2, column=0, pady=2)
         sele.var = var
@@ -225,7 +230,7 @@ class BatchWindow(Toplevel):
         savedest_button.grid(row=self.row, column=9, pady=2)
 
 
-        # add general parameters entry feilds (colors, font)
+        # add general parameters entry feilds (colors, font, line width)
         gen_label = Label(self.general_params_frame, text='General Graph Parameters')
         gen_label.configure(font=('Arial', 17))
         gen_label.grid(row=0, column=0, pady=5)
@@ -237,8 +242,19 @@ class BatchWindow(Toplevel):
         font_menu = OptionMenu(self.general_params_frame, self.fontvar, *font_options)
         font_menu.grid(row=2, column=1, pady=2, sticky=W)
 
-        Label(self.general_params_frame, text='*Colors (enter HEX values):').grid(row=3, column=0, pady=2, sticky=W)
-        Button(self.general_params_frame, text='Add color', command=self.add_color).grid(row=3, column=1, pady=2, sticky=W)
+        Label(self.general_params_frame, text='*Adjust line width:').grid(row=3, column=0, pady=2, sticky=W)
+        self.linewidth_var = IntVar()
+        self.linewidth_var.set(1)
+        linewidth_entry = Entry(self.general_params_frame, text=self.linewidth_var, width=6).grid(row=3, column=1, pady=2, sticky=W)
+        
+        self.direction_var = IntVar()
+        self.direction_var.set(1)
+        Label(self.general_params_frame, text='Tick marks point:').grid(row=4, column=0, pady=2, sticky=W)
+        Radiobutton(self.general_params_frame, text='Out', variable=self.direction_var, value=1).grid(row=4, column=1, pady=2, sticky=W)
+        Radiobutton(self.general_params_frame, text='In', variable=self.direction_var, value=2).grid(row=4, column=2, pady=2, sticky=W)
+
+        Label(self.general_params_frame, text='*Colors (enter HEX values):').grid(row=5, column=0, pady=2, sticky=W)
+        Button(self.general_params_frame, text='Add color', command=self.add_color).grid(row=5, column=1, pady=2, sticky=W)
 
         # add batch params feilds
         # x properties
@@ -267,35 +283,40 @@ class BatchWindow(Toplevel):
         Label(self.x_ax_params_frame, text='Tick label font size:').grid(row=5, column=0, pady=2, sticky=E)
         Entry(self.x_ax_params_frame).grid(row=5, column=1, pady=2)
 
+        self.top_var = IntVar()
+        self.top_var.set(0)
+        Label(self.x_ax_params_frame, text='Show tickmarks on top:').grid(row=6, column=0, pady=2, sticky=E)
+        Checkbutton(self.x_ax_params_frame, variable=self.top_var).grid(row=6, column=1, pady=2, sticky=W)
+
         x_ax_title = Label(self.x_ax_params_frame, text='Title properties')
         x_ax_title.configure(font=('Arial', 15))
-        x_ax_title.grid(row=6, column=0, pady=5, sticky=W)
+        x_ax_title.grid(row=7, column=0, pady=5, sticky=W)
 
-        Label(self.x_ax_params_frame, text='Axis label:').grid(row=7, column=0, pady=2, sticky=E)
-        Entry(self.x_ax_params_frame).grid(row=7, column=1, pady=2)
+        Label(self.x_ax_params_frame, text='Axis label:').grid(row=8, column=0, pady=2, sticky=E)
+        Entry(self.x_ax_params_frame).grid(row=8, column=1, pady=2)
 
-        Label(self.x_ax_params_frame, text='Axis label font size:').grid(row=7, column=2, pady=2, sticky=E)
-        Entry(self.x_ax_params_frame).grid(row=7, column=3, pady=2)
+        Label(self.x_ax_params_frame, text='Axis label font size:').grid(row=8, column=2, pady=2, sticky=E)
+        Entry(self.x_ax_params_frame).grid(row=8, column=3, pady=2)
 
         xscale = Label(self.x_ax_params_frame, text='Axis scale')
         xscale.configure(font=('Arial', 15))
-        xscale.grid(row=8, column=0, pady=5, sticky=W)
+        xscale.grid(row=9, column=0, pady=5, sticky=W)
 
-        Label(self.x_ax_params_frame, text='Current scale:').grid(row=9, column=0, pady=2, sticky=E)
+        Label(self.x_ax_params_frame, text='Current scale:').grid(row=10, column=0, pady=2, sticky=E)
         
         self.xscale_stringvar_actual = StringVar()
         self.xscale_stringvar = StringVar()
         self.xscale_stringvar.set('(Import files to detect axis scale)')
         self.xscale_stringvar_actual.set('(Import files to detect axis scale)')
         current_xscale = Label(self.x_ax_params_frame, textvariable=self.xscale_stringvar_actual)
-        current_xscale.grid(row=9, column=1, pady=2, sticky=E)
+        current_xscale.grid(row=10, column=1, pady=2, sticky=E)
         current_xscale.var = self.xscale_stringvar
 
-        Label(self.x_ax_params_frame, text='Convert to...').grid(row=9, column=2, pady=2, sticky=E)
+        Label(self.x_ax_params_frame, text='Convert to...').grid(row=10, column=2, pady=2, sticky=E)
 
         scale_conversions = ['(Import files to detect axis scale)']
         self.xscale_menu = OptionMenu(self.x_ax_params_frame, self.xscale_stringvar, scale_conversions)
-        self.xscale_menu.grid(row=9, column=3, pady=2, sticky=E)
+        self.xscale_menu.grid(row=10, column=3, pady=2, sticky=E)
 
         # y properties
         y_properties = Label(self.y_ax_params_frame, text='Y-axis properties (all parameters optional)')
@@ -323,34 +344,39 @@ class BatchWindow(Toplevel):
         Label(self.y_ax_params_frame, text='Tick label font size:').grid(row=5, column=0, pady=2, sticky=E)
         Entry(self.y_ax_params_frame).grid(row=5, column=1, pady=2)
 
+        self.right_var = IntVar()
+        self.right_var.set(0)
+        Label(self.y_ax_params_frame, text='Show tickmarks on the right:').grid(row=6, column=0, pady=2, sticky=E)
+        Checkbutton(self.y_ax_params_frame, variable=self.right_var).grid(row=6, column=1, pady=2, sticky=W)
+
         y_ax_title = Label(self.y_ax_params_frame, text='Title properties')
         y_ax_title.configure(font=('Arial', 15))
-        y_ax_title.grid(row=6, column=0, pady=5, sticky=W)
+        y_ax_title.grid(row=7, column=0, pady=5, sticky=W)
 
-        Label(self.y_ax_params_frame, text='Axis label:').grid(row=7, column=0, pady=2, sticky=E)
-        Entry(self.y_ax_params_frame).grid(row=7, column=1, pady=2)
+        Label(self.y_ax_params_frame, text='Axis label:').grid(row=8, column=0, pady=2, sticky=E)
+        Entry(self.y_ax_params_frame).grid(row=8, column=1, pady=2)
 
-        Label(self.y_ax_params_frame, text='Axis label font size:').grid(row=7, column=2, pady=2, sticky=E)
-        Entry(self.y_ax_params_frame).grid(row=7, column=3, pady=2)
+        Label(self.y_ax_params_frame, text='Axis label font size:').grid(row=8, column=2, pady=2, sticky=E)
+        Entry(self.y_ax_params_frame).grid(row=8, column=3, pady=2)
 
         yscale = Label(self.y_ax_params_frame, text='Axis scale')
         yscale.configure(font=('Arial', 15))
-        yscale.grid(row=8, column=0, pady=5, sticky=W)
+        yscale.grid(row=9, column=0, pady=5, sticky=W)
 
-        Label(self.y_ax_params_frame, text='Current scale:').grid(row=9, column=0, pady=2, sticky=E)
+        Label(self.y_ax_params_frame, text='Current scale:').grid(row=10, column=0, pady=2, sticky=E)
 
         self.yscale_stringvar_actual = StringVar()
         self.yscale_stringvar = StringVar()
         self.yscale_stringvar.set('(Import files to detect axis scale)')
         self.yscale_stringvar_actual.set('(Import files to detect axis scale)')
         current_yscale = Label(self.y_ax_params_frame, textvariable=self.yscale_stringvar_actual)
-        current_yscale.grid(row=9, column=1, pady=2, sticky=E)
+        current_yscale.grid(row=10, column=1, pady=2, sticky=E)
         current_yscale.var = self.yscale_stringvar
 
-        Label(self.y_ax_params_frame, text='Convert to...').grid(row=9, column=2, pady=2, sticky=E)
+        Label(self.y_ax_params_frame, text='Convert to...').grid(row=10, column=2, pady=2, sticky=E)
 
         self.yscale_menu = OptionMenu(self.y_ax_params_frame, self.yscale_stringvar, scale_conversions)
-        self.yscale_menu.grid(row=9, column=3, pady=2, sticky=E)
+        self.yscale_menu.grid(row=10, column=3, pady=2, sticky=E)
 
 
         # run and save buttons
@@ -679,17 +705,41 @@ class BatchWindow(Toplevel):
         for item in self.general_params_frame.winfo_children():
             dic = item.__dict__
             if '!entry' in dic['_name']:
-                entry = item.get()
-                self.batch.colors.append(entry)
+                if dic['_name'] != '!entry':
+                    print(type(item))
+                    entry = item.get()
+                    self.batch.colors.append(entry)
+            
         
         #get font
-        self.font = self.fontvar.get()
+        self.batch.font = self.fontvar.get()
         
         # get timescale alterations
         if self.xscale_stringvar_actual.get() != self.xscale_stringvar.get():
             self.batch.alter_xscale = [self.xscale_stringvar_actual.get(), self.xscale_stringvar.get()]
         if self.yscale_stringvar_actual.get() != self.yscale_stringvar.get():
             self.alter_yscale = [self.yscale_stringvar_actual.get(), self.yscale_stringvar.get()]
+        
+        # get line width setting
+        self.batch.linewidth = self.linewidth_var.get()
+
+        # set secondary axis
+        if self.top_var.get() == 0:
+            self.batch.secondary_x = False
+        else:
+            self.batch.secondary_x = True
+        
+        if self.right_var.get() == 0:
+            self.batch.secondary_y = False
+        else:
+            self.batch.secondary_y = True
+
+        # set tick direction
+        if self.direction_var.get() == 2:
+            self.batch.direction = 'in'
+        if self.direction_var.get() == 1:
+            self.batch.direction = 'out'
+
         self.batch.run()
 
 
