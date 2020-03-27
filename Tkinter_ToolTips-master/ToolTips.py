@@ -7,7 +7,8 @@
 # https://github.com/PedroHenriques 						 #
 # 															 #
 # Free to use under the MIT license.			 			 #
-# http://www.opensource.org/licenses/mit-license.php 		 #
+# http://www.opensource.org/licenses/mit-license.php 
+# edited by Kelsie King (github.com/kelsieking)
 # 															 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
