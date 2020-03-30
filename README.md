@@ -1,5 +1,5 @@
 # AnalysisTool
-This analysis tool, made for the [Bevan and Brown Lab](https://bevanbrownlab.com/),is a GUI that automates the creation of timeseries graphs from .xvg files. Support for more graph and file types is coming!
+This analysis tool, made for the [Bevan and Brown Lab](https://bevanbrownlab.com/), is a GUI that automates the creation of timeseries graphs from .xvg files. Support for more graph and file types is coming!
 
 ## Requirements
 You must have python 3.7 or earlier. If you have **python 3.8** or later, **the program will not work.** If you have python 3.8, you can create a virtual environment with a python 3.7 interpreter. 
